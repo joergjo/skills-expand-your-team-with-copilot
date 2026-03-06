@@ -25,13 +25,16 @@ document.addEventListener("DOMContentLoaded", () => {
   const closeLoginModal = document.querySelector(".close-login-modal");
   const loginMessage = document.getElementById("login-message");
 
+  // Dark mode toggle element
+  const darkModeToggle = document.getElementById("dark-mode-toggle");
+
   // Activity categories with corresponding colors
   const activityTypes = {
-    sports: { label: "Sports", color: "#e8f5e9", textColor: "#2e7d32" },
-    arts: { label: "Arts", color: "#f3e5f5", textColor: "#7b1fa2" },
-    academic: { label: "Academic", color: "#e3f2fd", textColor: "#1565c0" },
-    community: { label: "Community", color: "#fff3e0", textColor: "#e65100" },
-    technology: { label: "Technology", color: "#e8eaf6", textColor: "#3949ab" },
+    sports: { label: "Sports", color: "#e8f5e9", textColor: "#2e7d32", darkColor: "#1b3a1c", darkTextColor: "#66bb6a" },
+    arts: { label: "Arts", color: "#f3e5f5", textColor: "#7b1fa2", darkColor: "#2d1b33", darkTextColor: "#ce93d8" },
+    academic: { label: "Academic", color: "#e3f2fd", textColor: "#1565c0", darkColor: "#0d2a4a", darkTextColor: "#64b5f6" },
+    community: { label: "Community", color: "#fff3e0", textColor: "#e65100", darkColor: "#3d1f00", darkTextColor: "#ffb74d" },
+    technology: { label: "Technology", color: "#e8eaf6", textColor: "#3949ab", darkColor: "#1a1f3d", darkTextColor: "#7986cb" },
   };
 
   // State for activities and filters
@@ -506,8 +509,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const formattedSchedule = formatSchedule(details);
 
     // Create activity tag
+    const isDarkMode = document.documentElement.getAttribute("data-theme") === "dark";
+    const tagBgColor = isDarkMode ? typeInfo.darkColor : typeInfo.color;
+    const tagTextColor = isDarkMode ? typeInfo.darkTextColor : typeInfo.textColor;
     const tagHtml = `
-      <span class="activity-tag" style="background-color: ${typeInfo.color}; color: ${typeInfo.textColor}">
+      <span class="activity-tag" style="background-color: ${tagBgColor}; color: ${tagTextColor}">
         ${typeInfo.label}
       </span>
     `;
@@ -913,4 +919,25 @@ document.addEventListener("DOMContentLoaded", () => {
   checkAuthentication();
   initializeFilters();
   fetchActivities();
+
+  // Dark mode: apply saved preference and set up toggle
+  function applyTheme(isDark) {
+    document.documentElement.setAttribute("data-theme", isDark ? "dark" : "light");
+    darkModeToggle.textContent = isDark ? "☀️" : "🌙";
+    darkModeToggle.setAttribute("aria-label", isDark ? "Switch to light mode" : "Switch to dark mode");
+    // Re-render activity cards so inline tag colors update
+    if (Object.keys(allActivities).length > 0) {
+      displayFilteredActivities();
+    }
+  }
+
+  // Apply saved theme on load; defaults to light mode if no preference is stored
+  const savedTheme = localStorage.getItem("theme");
+  applyTheme(savedTheme === "dark");
+
+  darkModeToggle.addEventListener("click", () => {
+    const isDark = document.documentElement.getAttribute("data-theme") !== "dark";
+    applyTheme(isDark);
+    localStorage.setItem("theme", isDark ? "dark" : "light");
+  });
 });
